@@ -2,7 +2,8 @@ ext.grid = {}
 
 ext.grid.MARGINX = 5
 ext.grid.MARGINY = 5
-ext.grid.GRIDWIDTH = 3
+ext.grid.GRIDCOLS = 6
+ext.grid.GRIDROWS = 2
 
 local function round(num, idp)
   local mult = 10^(idp or 0)
@@ -12,11 +13,11 @@ end
 function ext.grid.get(win)
   local winframe = win:frame()
   local screenrect = win:screen():frame_without_dock_or_menu()
-  local thirdscreenwidth = screenrect.w / ext.grid.GRIDWIDTH
-  local halfscreenheight = screenrect.h / 2
+  local colwidth = screenrect.w / ext.grid.GRIDCOLS
+  local rowheight = screenrect.h / ext.grid.GRIDROWS
   return {
-    x = round((winframe.x - screenrect.x) / thirdscreenwidth),
-    y = round((winframe.y - screenrect.y) / halfscreenheight),
+    x = round((winframe.x - screenrect.x) / colwidth),
+    y = round((winframe.y - screenrect.y) / rowheight),
     w = math.max(1, round(winframe.w / thirdscreenwidth)),
     h = math.max(1, round(winframe.h / halfscreenheight)),
   }
@@ -24,13 +25,13 @@ end
 
 function ext.grid.set(win, grid, screen)
   local screenrect = screen:frame_without_dock_or_menu()
-  local thirdscreenwidth = screenrect.w / ext.grid.GRIDWIDTH
-  local halfscreenheight = screenrect.h / 2
+  local colwidth = screenrect.w / ext.grid.GRIDCOLS
+  local rowheight = screenrect.h / ext.grid.GRIDROWS
   local newframe = {
-    x = (grid.x * thirdscreenwidth) + screenrect.x,
-    y = (grid.y * halfscreenheight) + screenrect.y,
-    w = grid.w * thirdscreenwidth,
-    h = grid.h * halfscreenheight,
+    x = (grid.x * colwidth) + screenrect.x,
+    y = (grid.y * rowheight) + screenrect.y,
+    w = grid.w * colwidth,
+    h = grid.h * rowheight,
   }
 
   newframe.x = newframe.x + ext.grid.MARGINX
@@ -47,9 +48,15 @@ function ext.grid.snap(win)
   end
 end
 
-function ext.grid.adjustwidth(by)
-  ext.grid.GRIDWIDTH = math.max(1, ext.grid.GRIDWIDTH + by)
-  hydra.alert("grid is now " .. tostring(ext.grid.GRIDWIDTH) .. " tiles wide", 1)
+function ext.grid.adjustcols(by)
+  ext.grid.GRIDCOLS = math.max(1, ext.grid.GRIDCOLS + by)
+  hydra.alert("grid is now " .. tostring(ext.grid.GRIDCOLS) .. " tiles wide", 1)
+  fnutils.map(window.visiblewindows(), ext.grid.snap)
+end
+
+function ext.grid.adjustrows(by)
+  ext.grid.GRIDROWS = math.max(1, ext.grid.GRIDROWS + by)
+  hydra.alert("grid is now " .. tostring(ext.grid.GRIDROWS) .. " tiles tall", 1)
   fnutils.map(window.visiblewindows(), ext.grid.snap)
 end
 
@@ -62,7 +69,7 @@ end
 
 function ext.grid.maximize_window()
   local win = window.focusedwindow()
-  local f = {x = 0, y = 0, w = ext.grid.GRIDWIDTH, h = 2}
+  local f = {x = 0, y = 0, w = ext.grid.GRIDCOLS, h = ext.grid.GRIDROWS}
   ext.grid.set(win, f, win:screen())
 end
 
@@ -81,11 +88,11 @@ function ext.grid.pushwindow_left()
 end
 
 function ext.grid.pushwindow_right()
-  ext.grid.adjust_focused_window(function(f) f.x = math.min(f.x + 1, ext.grid.GRIDWIDTH - f.w) end)
+  ext.grid.adjust_focused_window(function(f) f.x = math.min(f.x + 1, ext.grid.GRIDCOLS - f.w) end)
 end
 
 function ext.grid.resizewindow_wider()
-  ext.grid.adjust_focused_window(function(f) f.w = math.min(f.w + 1, ext.grid.GRIDWIDTH - f.x) end)
+  ext.grid.adjust_focused_window(function(f) f.w = math.min(f.w + 1, ext.grid.GRIDCOLS - f.x) end)
 end
 
 function ext.grid.resizewindow_thinner()
