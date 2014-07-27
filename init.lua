@@ -1,7 +1,7 @@
 ext.grid = {}
 
-ext.grid.MARGINX = 5
-ext.grid.MARGINY = 5
+ext.grid.MARGINX = 0
+ext.grid.MARGINY = 0
 ext.grid.GRIDCOLS = 6
 ext.grid.GRIDROWS = 2
 
